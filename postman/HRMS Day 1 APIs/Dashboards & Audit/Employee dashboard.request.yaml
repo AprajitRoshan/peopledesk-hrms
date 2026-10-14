@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/dashboard/employee"
+method: GET
+headers:
+  Authorization: Bearer {{employeeToken}}
+order: 2000

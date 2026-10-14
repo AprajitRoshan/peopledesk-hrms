@@ -1,0 +1,27 @@
+$kind: http-request
+description: Use an employee+period combination that does not already exist. Omit base salary (null) to use profile salary.
+url: "{{baseUrl}}/payroll"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employee_id": "{{employeeId}}",
+      "pay_period": "{{period}}",
+      "base_salary": null,
+      "allowances": "10000.00",
+      "deductions": "14000.00",
+      "adjustment_amount": "0.00",
+      "adjustment_note": null
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 201) { const body = pm.response.json(); pm.collectionVariables.set('payrollId', String(body.id)); }
+    language: text/javascript
+order: 1000

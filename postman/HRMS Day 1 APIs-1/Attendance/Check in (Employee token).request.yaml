@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/attendance/check-in"
+method: POST
+headers:
+  Authorization: Bearer {{employeeToken}}
+order: 1000

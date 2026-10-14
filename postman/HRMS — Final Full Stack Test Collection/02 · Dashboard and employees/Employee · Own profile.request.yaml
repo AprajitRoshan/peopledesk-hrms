@@ -1,0 +1,9 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/employees/me"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeToken}}"
+order: 2000

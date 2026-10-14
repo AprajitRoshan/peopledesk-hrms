@@ -1,0 +1,10 @@
+$kind: http-request
+name: Payroll · List by period/department
+description: ""
+url: "{{baseUrl}}/payroll?period={{period}}&department={{department}}"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 2000

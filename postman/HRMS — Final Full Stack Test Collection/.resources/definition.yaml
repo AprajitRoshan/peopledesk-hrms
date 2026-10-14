@@ -1,0 +1,19 @@
+$kind: collection
+description: Consolidated Day 1–3 collection for PeopleDesk HRMS. Update variables before running. Admin and employee login requests capture JWTs automatically. Some workflows intentionally mutate data; choose non-duplicate employee/pay-period and leave dates. Salary credit is simulation only.
+variables:
+  baseUrl: http://127.0.0.1:8000/api
+  adminEmail: admin@example.com
+  adminPassword: CHANGE_ME
+  employeeEmail: rahul.employee@example.com
+  employeePassword: CHANGE_ME
+  adminToken: ""
+  employeeToken: ""
+  employeeId: "1"
+  userId: "2"
+  leaveId: "1"
+  payrollId: "1"
+  period: 2026-11
+  startDate: 2026-10-01
+  endDate: 2026-10-31
+  department: Engineering
+  documentId: "1"

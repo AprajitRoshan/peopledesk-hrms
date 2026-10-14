@@ -1,0 +1,9 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/payroll/{{payrollId}}/lock"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 4000

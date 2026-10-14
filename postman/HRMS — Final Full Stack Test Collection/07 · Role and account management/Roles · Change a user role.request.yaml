@@ -1,0 +1,17 @@
+$kind: http-request
+description: Use an existing non-admin test user. This route is Admin-only.
+url: "{{baseUrl}}/admin/users/{{userId}}/role"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "role": "hr"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 2000

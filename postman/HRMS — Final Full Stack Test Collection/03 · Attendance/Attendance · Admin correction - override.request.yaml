@@ -1,0 +1,23 @@
+$kind: http-request
+name: Attendance · Admin correction / override
+description: ""
+url: "{{baseUrl}}/attendance/override"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employee_id": "{{employeeId}}",
+      "work_date": "2026-10-12",
+      "check_in": "2026-10-12T04:30:00",
+      "check_out": "2026-10-12T12:30:00",
+      "status": "present",
+      "correction_note": "Corrected after manager verified attendance records."
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 5000

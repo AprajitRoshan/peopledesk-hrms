@@ -1,0 +1,10 @@
+$kind: http-request
+name: Notifications · Delivery/log history
+description: ""
+url: "{{baseUrl}}/payroll/notifications"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 8000

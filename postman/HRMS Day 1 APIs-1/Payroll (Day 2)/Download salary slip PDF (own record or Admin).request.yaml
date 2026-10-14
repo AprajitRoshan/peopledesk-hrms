@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/payroll/{{payrollRecordId}}/salary-slip.pdf"
+method: GET
+headers:
+  Authorization: Bearer {{employeeToken}}
+order: 5000

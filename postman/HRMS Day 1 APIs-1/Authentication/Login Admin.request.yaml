@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "admin@example.com",
+      "password": "CHANGE_ME"
+    }
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().access_token); }
+    language: text/javascript
+order: 1000

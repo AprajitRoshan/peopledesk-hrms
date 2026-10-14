@@ -1,0 +1,9 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/attendance/check-out"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeToken}}"
+order: 2000

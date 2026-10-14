@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: 6fa19a3f-1d31-41b2-8099-0357cad3ad9b
+
+localResources:
+  collections:
+    - ../HRMS Day 1 APIs
+    - ../HRMS Day 1 APIs-1
+    - ../HRMS — Final Full Stack Test Collection
+    - ../HRMS — Final Full Stack Test Collection-1

@@ -1,0 +1,20 @@
+$kind: http-request
+description: Set adminToken from the login response.
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{adminEmail}}",
+      "password": "{{adminPassword}}"
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 200) { const body = pm.response.json(); pm.collectionVariables.set('adminToken', body.access_token); pm.test('Admin login succeeded', () => pm.expect(body.access_token).to.be.a('string')); } else { pm.test('Login responded successfully', () => pm.expect(pm.response.code).to.eql(200)); }
+    language: text/javascript
+order: 1000

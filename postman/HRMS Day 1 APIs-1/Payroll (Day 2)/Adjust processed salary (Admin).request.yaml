@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/payroll/{{payrollRecordId}}/adjustment"
+method: PATCH
+headers:
+  Authorization: Bearer {{adminToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "adjustment_amount": 1500,
+      "adjustment_note": "Approved payroll correction"
+    }
+order: 3000

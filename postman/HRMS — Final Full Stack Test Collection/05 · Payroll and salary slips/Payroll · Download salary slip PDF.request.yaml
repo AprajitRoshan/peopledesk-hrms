@@ -1,0 +1,9 @@
+$kind: http-request
+description: Save response as PDF in Postman to capture sample salary slip.
+url: "{{baseUrl}}/payroll/{{payrollId}}/salary-slip.pdf"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 7000

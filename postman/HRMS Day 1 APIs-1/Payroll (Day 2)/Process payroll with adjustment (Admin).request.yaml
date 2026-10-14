@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/payroll"
+method: POST
+headers:
+  Authorization: Bearer {{adminToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employee_id": 1,
+      "pay_period": "{{payPeriod}}",
+      "base_salary": 50000,
+      "allowances": 5000,
+      "deductions": 2500,
+      "adjustment_amount": 1000,
+      "adjustment_note": "Approved overtime adjustment"
+    }
+order: 2000

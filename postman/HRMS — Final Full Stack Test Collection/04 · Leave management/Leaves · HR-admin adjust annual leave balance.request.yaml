@@ -1,0 +1,18 @@
+$kind: http-request
+name: Leaves · HR/admin adjust annual leave balance
+description: ""
+url: "{{baseUrl}}/leaves/balance/{{employeeId}}/annual"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "allocated_days": 12
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 6000

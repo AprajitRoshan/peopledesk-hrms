@@ -1,0 +1,10 @@
+$kind: http-request
+name: Employees · List / search
+description: ""
+url: "{{baseUrl}}/employees?skip=0&limit=50&search=Rahul&department=Engineering"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 3000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/leaves/1/decision"
+method: PATCH
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "decision": "approved",
+      "review_note": "Approved"
+    }
+order: 3000

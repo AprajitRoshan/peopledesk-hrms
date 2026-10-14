@@ -1,0 +1,7 @@
+$kind: http-request
+description: Simple service status endpoint.
+url: http://127.0.0.1:8000/api/health
+method: GET
+auth:
+  type: noauth
+order: 3000

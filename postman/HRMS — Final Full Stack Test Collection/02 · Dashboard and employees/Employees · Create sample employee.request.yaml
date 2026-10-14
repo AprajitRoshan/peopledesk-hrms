@@ -1,0 +1,29 @@
+$kind: http-request
+description: Create only if the email and employee code are not already in use; save response id to employeeId.
+url: "{{baseUrl}}/employees"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "full_name": "Sample Employee",
+      "email": "sample.employee@example.com",
+      "password": "ChangeThisPass123!",
+      "employee_code": "EMP-DEMO-902",
+      "department": "Engineering",
+      "designation": "Software Developer",
+      "phone": "9000000000",
+      "joining_date": "2026-10-14",
+      "monthly_salary": "60000.00"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 201) { const body = pm.response.json(); pm.collectionVariables.set('employeeId', String(body.id)); pm.test('Employee created', () => pm.expect(body.id).to.be.a('number')); }
+    language: text/javascript
+order: 4000

@@ -1,0 +1,18 @@
+$kind: http-request
+name: Roles · Activate / deactivate account
+description: This route is Admin-only; avoid disabling the final active Admin.
+url: "{{baseUrl}}/admin/users/{{userId}}/status"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "is_active": true
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 3000

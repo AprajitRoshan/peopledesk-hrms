@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/employees?limit=100"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+order: 2000

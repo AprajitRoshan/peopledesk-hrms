@@ -1,0 +1,18 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/payroll/{{payrollId}}/adjustment"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "adjustment_amount": "2500.00",
+      "adjustment_note": "Approved overtime payment after manager review."
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 3000

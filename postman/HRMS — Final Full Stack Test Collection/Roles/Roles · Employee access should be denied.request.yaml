@@ -1,0 +1,13 @@
+$kind: http-request
+description: Expected result is 403 Forbidden when run with Employee token. Do not run this request with adminToken.
+url: "{{baseUrl}}/admin/users"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeToken}}"
+scripts:
+  - type: afterResponse
+    code: pm.test("Employee cannot access Admin user management", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 1000

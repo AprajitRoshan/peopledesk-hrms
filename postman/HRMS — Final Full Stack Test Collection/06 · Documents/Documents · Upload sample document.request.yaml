@@ -1,0 +1,9 @@
+$kind: http-request
+description: "For this request change Body to form-data and add key `file` of type File. Allowed: PDF, PNG, JPEG; max 5 MB."
+url: "{{baseUrl}}/documents/{{employeeId}}"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 3000

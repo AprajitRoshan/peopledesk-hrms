@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/leaves"
+method: POST
+headers:
+  Authorization: Bearer {{employeeToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "start_date": "2026-10-20",
+      "end_date": "2026-10-21",
+      "leave_type": "annual",
+      "reason": "Personal commitments"
+    }
+order: 1000

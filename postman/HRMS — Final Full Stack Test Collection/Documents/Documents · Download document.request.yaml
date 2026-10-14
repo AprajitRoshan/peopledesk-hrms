@@ -1,0 +1,9 @@
+$kind: http-request
+description: Set documentId to a real document ID returned by the document list endpoint. The response is a PDF/PNG/JPEG file.
+url: "{{baseUrl}}/documents/file/{{documentId}}"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 1000

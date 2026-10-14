@@ -1,0 +1,24 @@
+$kind: http-request
+description: Use weekdays and choose dates without an overlapping request.
+url: "{{baseUrl}}/leaves"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "start_date": "2026-11-09",
+      "end_date": "2026-11-10",
+      "leave_type": "annual",
+      "reason": "Personal appointment and travel planned in advance."
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeToken}}"
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 201) { const body = pm.response.json(); pm.collectionVariables.set('leaveId', String(body.id)); }
+    language: text/javascript
+order: 2000

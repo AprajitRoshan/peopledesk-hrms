@@ -1,0 +1,6 @@
+$kind: collection
+description: Auth, employee, attendance, leave, dashboard and audit endpoints. Run Login Admin first; token is captured to collection variables.
+variables:
+  baseUrl: http://127.0.0.1:8000
+  token: ""
+  employeeToken: ""

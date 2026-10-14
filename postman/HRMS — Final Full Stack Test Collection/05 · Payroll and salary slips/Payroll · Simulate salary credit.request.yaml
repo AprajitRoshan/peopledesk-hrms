@@ -1,0 +1,9 @@
+$kind: http-request
+description: Simulation only—no bank transfer or payment gateway is connected.
+url: "{{baseUrl}}/payroll/{{payrollId}}/credit"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 5000

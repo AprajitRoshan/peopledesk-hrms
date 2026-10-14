@@ -1,0 +1,9 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/payroll/me"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeToken}}"
+order: 6000

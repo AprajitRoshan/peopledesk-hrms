@@ -1,0 +1,18 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/leaves/{{leaveId}}/decision"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "decision": "approved",
+      "review_note": "Approved for the requested dates."
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminToken}}"
+order: 5000

@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/employees"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "full_name": "Sample Employee",
+      "email": "employee@example.com",
+      "password": "ChangeMe123!",
+      "employee_code": "EMP001",
+      "department": "Engineering",
+      "designation": "Software Engineer",
+      "phone": "9999999999",
+      "joining_date": "2026-10-12"
+    }
+order: 1000
