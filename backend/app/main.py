@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.config import settings
 from app.database import Base, engine, ensure_compatibility_columns
 # Import all models so SQLAlchemy registers the complete Day 1 schema.
-from app.models import User, Employee, Attendance, LeaveRequest, AuditLog, PayrollRecord, NotificationLog, LeaveBalance, EmployeeDocument  # noqa: F401
+from app.models import User, Employee, Attendance, LeaveRequest, AuditLog, PayrollRecord, NotificationLog, LeaveBalance, EmployeeDocument, Holiday, OptionalHolidaySelection, InAppNotification, NotificationPreference, WorkShift, ShiftAssignment, SalaryComponent, CompensationRevision  # noqa: F401
 from app.routers.auth import router as auth_router
 from app.routers.employees import router as employees_router
 from app.routers.attendance import router as attendance_router
@@ -17,6 +17,10 @@ from app.routers.payroll import router as payroll_router
 from app.routers.documents import router as documents_router
 from app.routers.admin import router as admin_router
 from app.routers.reports import router as reports_router
+from app.routers.holidays import router as holidays_router
+from app.routers.in_app_notifications import router as in_app_notifications_router
+from app.routers.shifts import router as shifts_router
+from app.routers.compensation import router as compensation_router
 
 
 @asynccontextmanager
@@ -27,7 +31,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, description="Human Resource Management System API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, description="Human Resource Management System API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=[settings.frontend_url, "http://127.0.0.1:5173", "http://localhost:5173"],
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.include_router(auth_router)
@@ -40,6 +44,10 @@ app.include_router(payroll_router)
 app.include_router(documents_router)
 app.include_router(admin_router)
 app.include_router(reports_router)
+app.include_router(holidays_router)
+app.include_router(in_app_notifications_router)
+app.include_router(shifts_router)
+app.include_router(compensation_router)
 
 
 @app.get("/")

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from calendar import monthrange
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -10,6 +10,8 @@ from app.database import get_db
 from app.models.attendance import Attendance
 from app.models.employee import Employee
 from app.models.user import User
+from app.services.workforce import calculate_attendance_shift_metrics, working_days_excluding_holidays, holiday_dates
+from app.services.in_app_notifications import create_in_app_notification, notify_hr_admins
 from app.schemas.hrms import AttendanceResponse
 
 router = APIRouter(prefix="/api/attendance", tags=["Attendance"])
@@ -67,7 +69,14 @@ def check_in(db: Db, user: CurrentUser):
         db.add(record)
     else:
         record.check_in = now; record.status = "present"
+    shift_facts = calculate_attendance_shift_metrics(db, record, employee)
     db.flush()
+    if shift_facts["late_minutes"] > 0:
+        create_in_app_notification(db, user_id=user.id, category="attendance", title="Late check-in recorded",
+            message=f"Your check-in was {shift_facts['late_minutes']} minute(s) after the shift grace period.", source_type="attendance", source_id=record.id)
+        notify_hr_admins(db, category="attendance", title="Late employee check-in",
+            message=f"{user.full_name} ({employee.employee_code}) checked in {shift_facts['late_minutes']} minute(s) late.",
+            source_type="attendance", source_id=record.id, created_by=user.id)
     write_audit_log(db, actor_user_id=user.id, action="attendance.checked_in", entity_type="attendance", entity_id=record.id,
                     details={"employee_id": employee.id, "work_date": today.isoformat()})
     db.commit(); db.refresh(record)
@@ -77,8 +86,10 @@ def check_in(db: Db, user: CurrentUser):
 @router.post("/check-out", response_model=AttendanceResponse)
 def check_out(db: Db, user: CurrentUser):
     employee = my_employee(db, user)
-    record = db.query(Attendance).filter(Attendance.employee_id == employee.id, Attendance.work_date == date.today()).first()
-    if record is None or record.check_in is None:
+    record = db.query(Attendance).filter(Attendance.employee_id == employee.id,
+        Attendance.work_date >= date.today() - timedelta(days=1), Attendance.check_in.isnot(None),
+        Attendance.check_out.is_(None)).order_by(Attendance.work_date.desc()).first()
+    if record is None:
         raise HTTPException(status_code=409, detail="Check in before checking out.")
     if record.check_out is not None:
         raise HTTPException(status_code=409, detail="You have already checked out today.")
@@ -86,6 +97,16 @@ def check_out(db: Db, user: CurrentUser):
     if now < record.check_in:
         raise HTTPException(status_code=409, detail="Current time is earlier than the recorded check-in.")
     record.check_out = now
+    shift_facts = calculate_attendance_shift_metrics(db, record, employee)
+    if shift_facts["early_leave_minutes"] > 0:
+        create_in_app_notification(db, user_id=user.id, category="attendance", title="Early check-out recorded",
+            message=f"Your check-out was {shift_facts['early_leave_minutes']} minute(s) before the scheduled shift end.", source_type="attendance", source_id=record.id)
+        notify_hr_admins(db, category="attendance", title="Early employee check-out",
+            message=f"{user.full_name} ({employee.employee_code}) checked out {shift_facts['early_leave_minutes']} minute(s) early.",
+            source_type="attendance", source_id=record.id, created_by=user.id)
+    if shift_facts["overtime_minutes"] > 0:
+        create_in_app_notification(db, user_id=user.id, category="attendance", title="Overtime recorded",
+            message=f"Your shift records {shift_facts['overtime_minutes']} overtime minute(s).", source_type="attendance", source_id=record.id)
     write_audit_log(db, actor_user_id=user.id, action="attendance.checked_out", entity_type="attendance", entity_id=record.id,
                     details={"employee_id": employee.id, "work_date": record.work_date.isoformat()})
     db.commit(); db.refresh(record)
@@ -112,11 +133,13 @@ def my_monthly_summary(db: Db, user: CurrentUser, month: str = Query(pattern=r"^
         Attendance.work_date >= first, Attendance.work_date <= last).all()
     worked_hours = sum((max(0, (row.check_out - row.check_in).total_seconds() / 3600)
                         if row.check_in and row.check_out else 0) for row in rows)
+    holidays = holiday_dates(db, first, last, employee)
     return {"month": month, "employee_id": employee.id, "employee_code": employee.employee_code,
-        "attendance_days": sum(1 for row in rows if row.check_in and row.status == "present"),
-        "absent_days": sum(1 for row in rows if row.status == "absent"),
-        "leave_days": sum(1 for row in rows if row.status == "leave"),
-        "worked_hours": round(worked_hours, 2), "records": len(rows)}
+        "attendance_days": sum(1 for row in rows if row.check_in and row.status == "present" and row.work_date not in holidays and row.work_date.weekday() < 5),
+        "absent_days": sum(1 for row in rows if row.status == "absent" and row.work_date not in holidays and row.work_date.weekday() < 5),
+        "leave_days": sum(1 for row in rows if row.status == "leave" and row.work_date not in holidays and row.work_date.weekday() < 5),
+        "worked_hours": round(worked_hours, 2), "records": len(rows),
+        "expected_workdays": working_days_excluding_holidays(db, first, last, employee), "holidays": sorted(day.isoformat() for day in holidays)}
 
 
 @router.get("/summary")
@@ -132,12 +155,14 @@ def all_monthly_summaries(db: Db, actor: HrUser, month: str = Query(pattern=r"^\
             Attendance.work_date >= first, Attendance.work_date <= last).all()
         worked_hours = sum((max(0, (row.check_out - row.check_in).total_seconds() / 3600)
                             if row.check_in and row.check_out else 0) for row in rows)
+        holidays = holiday_dates(db, first, last, employee)
         summaries.append({"employee_id": employee.id, "employee_code": employee.employee_code,
             "employee_name": user.full_name, "department": employee.department,
-            "attendance_days": sum(1 for row in rows if row.check_in and row.status == "present"),
-            "absent_days": sum(1 for row in rows if row.status == "absent"),
-            "leave_days": sum(1 for row in rows if row.status == "leave"),
-            "worked_hours": round(worked_hours, 2), "records": len(rows)})
+            "attendance_days": sum(1 for row in rows if row.check_in and row.status == "present" and row.work_date not in holidays and row.work_date.weekday() < 5),
+            "absent_days": sum(1 for row in rows if row.status == "absent" and row.work_date not in holidays and row.work_date.weekday() < 5),
+            "leave_days": sum(1 for row in rows if row.status == "leave" and row.work_date not in holidays and row.work_date.weekday() < 5),
+            "worked_hours": round(worked_hours, 2), "records": len(rows),
+            "expected_workdays": working_days_excluding_holidays(db, first, last, employee), "holidays": sorted(day.isoformat() for day in holidays)})
     return {"month": month, "employee_count": len(summaries), "employees": summaries}
 
 
@@ -169,6 +194,7 @@ def attendance_override(payload: AttendanceOverride, db: Db, actor: HrUser):
         db.add(record)
     record.check_in, record.check_out = payload.check_in, payload.check_out
     record.status, record.correction_note = payload.status, payload.correction_note.strip()
+    calculate_attendance_shift_metrics(db, record, employee)
     db.flush()
     write_audit_log(db, actor_user_id=actor.id, action="attendance.admin_override", entity_type="attendance", entity_id=record.id,
         details={"employee_id": employee.id, "work_date": payload.work_date.isoformat(), "before": before,

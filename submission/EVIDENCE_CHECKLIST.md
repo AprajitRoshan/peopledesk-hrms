@@ -1,32 +1,32 @@
-# PeopleDesk HRMS — Final Evidence Checklist
+# PeopleDesk HRMS — Evidence Checklist
 
-Use this checklist for the project handover. A checked screenshot proves the displayed page was captured; it does not automatically prove every underlying workflow has passed.
+Use this checklist for the final handover. Some UI evidence and export files were provided/verified in the previous local project, but are intentionally excluded from the public Phase 3 source package because they can contain employee, salary, or environment-specific information. Attach them separately through the authorized private submission channel if the reviewer requires them.
 
-## Existing evidence in this package
-- [x] `local_evidence/01_admin_dashboard.png` — Admin dashboard
-- [x] `local_evidence/02_employee_dashboard.png` — Employee workspace and attendance/leave overview
-- [x] `local_evidence/03_salary_slips_and_documents.png` — Employee salary-slip and document area
-- [x] `local_evidence/04_admin_documents.png` — Admin document management
-- [x] `local_evidence/05_reports_analytics.png` — Reports, filters and CSV/PDF export controls
-- [x] `local_evidence/06_attendance_csv_opened.png` — Attendance CSV opened in Excel
-- [x] `local_evidence/07_roles_and_permissions.png` — Role management UI
-- [x] `local_evidence/08_audit_logs.png` — Read-only audit records
-- [x] `sample_salary_slip.pdf` — Sample salary slip exported from the app
-- [x] `attendance_report.csv` and `attendance_report.pdf`
-- [x] `leaves_report.csv` and `leaves_report.pdf`
-- [x] `payroll_report.csv` and `payroll_report.pdf`
+## Previously verified on the local Phase 2 app (keep private / submit separately)
+- [x] Admin dashboard screenshot
+- [x] Employee dashboard screenshot
+- [x] Salary slips and employee document panel
+- [x] Admin employee document management; dummy PDF uploaded and downloadable
+- [x] Reports & Analytics screen; date/department filters and CSV/PDF export controls
+- [x] Attendance CSV opened in Excel
+- [x] Roles & Users screen covering Admin, HR and Employee role options
+- [x] Audit log screen showing timestamped employee, attendance, leave, payroll and document actions
+- [x] Notification log screen; one new leave notification showed `Sent`, and corresponding email arrived in Gmail
+- [x] Payroll LOP calculation on November test record: 2 LOP days, ₹4,285.71 deduction, ₹40,714.29 net salary
+- [x] Payroll lock and simulated credit verified; credit is not a bank transfer
+- [x] API health and database health returned `200 OK`; Admin login returned `200 OK` before credential rotation
+- [x] Previous phase report exports and sample salary slip PDF were produced locally; do not commit salary slips or report files publicly
 
-## Still verify on the local machine
-- [ ] Open the new Admin/HR Notifications tab, verify existing attempts load, then capture `09_notification_log.png`.
-- [ ] Determine whether SMTP is configured. `logged` means recorded but not emailed; `sent` means SMTP accepted the message; `failed` shows delivery attempt failure.
-- [ ] Process a fresh test payroll period with approved unpaid leave to verify LOP deduction; do not duplicate the already processed October payroll.
-- [ ] Lock a test payroll record, confirm adjustments are rejected, then simulate credit and confirm status changes to `credited`. Explain that credit is only a simulation.
-- [ ] Import `../postman/HRMS_Final.postman_collection.json`, set local variables, and run the requests that do not create duplicate/test records unintentionally.
-- [ ] Save Postman test results or an exported run report if the reviewer requests API evidence.
-- [ ] Run `npm run build` and `python -m compileall -q backend/app` on the Windows machine and resolve any errors.
-- [ ] Check `git status --short` and verify `.env`, database dumps, uploaded documents, dependencies, JWT tokens, and passwords are not staged.
-- [ ] Verify GitHub source has been pushed and copy the repository URL into the handover document.
-- [ ] Fill actual Admin/Employee passwords only in a private copy of `CREDENTIALS_TEMPLATE.md`; never commit that filled copy.
+## Phase 3 verification still required on Windows + local MySQL
+- [ ] Holiday monthly/yearly view; create/deactivate a company or regional holiday; select an optional holiday as employee
+- [ ] Confirm attendance expected-workday/monthly summary excludes applicable holidays
+- [ ] In-app notification feed, unread/read/read-all, preferences, and Admin/HR announcement broadcast
+- [ ] Define and assign a work shift; confirm history and shift-wise attendance report; verify late/early/overtime metrics on a safe test date
+- [ ] Create a salary component and a future-dated compensation revision; verify history and component calculations
+- [ ] Process a fresh test payroll with bonus/variable pay only for a new employee-period combination and check the detailed PDF breakdown
+- [ ] On Windows, run `npm install` then `npm run build` in `frontend` and `python -m compileall -q app` in `backend`
+- [ ] Keep database dump, credentials note, real salary slips, report exports, screenshots, employee documents and SMTP secrets out of public GitHub
+- [ ] After local verification, commit and push the Phase 3 changes; confirm the repository shows the intended latest commit
 
 ## Screenshot guidance
-Capture new screenshots only for outstanding items. Hide tokens, passwords and personal information. Use dummy employee information only.
+Capture new screenshots only for outstanding Phase 3 flows. Hide passwords, tokens, personal email addresses, and private salary details where they are not necessary to prove the feature. Use dummy employee data when possible.

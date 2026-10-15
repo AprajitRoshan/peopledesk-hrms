@@ -12,6 +12,7 @@ class EmployeeCreate(BaseModel):
     department: str = Field(min_length=2, max_length=100)
     designation: str = Field(min_length=2, max_length=100)
     phone: str | None = Field(default=None, max_length=20)
+    region: str | None = Field(default=None, max_length=100)
     joining_date: date
     monthly_salary: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=12, decimal_places=2)
 
@@ -31,6 +32,7 @@ class EmployeeResponse(BaseModel):
     department: str
     designation: str
     phone: str | None
+    region: str | None = None
     joining_date: date
     employment_status: str
     monthly_salary: Decimal = Decimal("0.00")
@@ -47,6 +49,7 @@ class EmployeeUpdate(BaseModel):
     department: str | None = Field(default=None, min_length=2, max_length=100)
     designation: str | None = Field(default=None, min_length=2, max_length=100)
     phone: str | None = Field(default=None, max_length=20)
+    region: str | None = Field(default=None, max_length=100)
     joining_date: date | None = None
     monthly_salary: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     employment_status: Literal["active", "inactive"] | None = None

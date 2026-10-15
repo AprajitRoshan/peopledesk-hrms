@@ -43,9 +43,14 @@ def ensure_compatibility_columns():
     required = {
         "employees": {
             "monthly_salary": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "region": "VARCHAR(100) NULL",
         },
         "attendance": {
             "correction_note": "VARCHAR(500) NULL",
+            "shift_id": "INT NULL",
+            "late_minutes": "INT NOT NULL DEFAULT 0",
+            "early_leave_minutes": "INT NOT NULL DEFAULT 0",
+            "overtime_minutes": "INT NOT NULL DEFAULT 0",
         },
         "leave_requests": {
             "review_note": "TEXT NULL",
@@ -57,6 +62,14 @@ def ensure_compatibility_columns():
             "lop_deduction": "DECIMAL(12,2) NOT NULL DEFAULT 0",
             "locked_at": "DATETIME NULL",
             "credited_at": "DATETIME NULL",
+            "basic_pay": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "bonus": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "variable_pay": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "overtime_hours": "DECIMAL(10,2) NOT NULL DEFAULT 0",
+            "overtime_pay": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "component_breakdown": "TEXT NULL",
+            "component_earning_total": "DECIMAL(12,2) NOT NULL DEFAULT 0",
+            "component_deduction_total": "DECIMAL(12,2) NOT NULL DEFAULT 0",
         },
     }
     inspector = inspect(engine)

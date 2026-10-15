@@ -24,7 +24,7 @@ def employee_payload(employee: Employee, user: User) -> dict:
     return {
         "id": employee.id, "user_id": employee.user_id,
         "employee_code": employee.employee_code, "department": employee.department,
-        "designation": employee.designation, "phone": employee.phone,
+        "designation": employee.designation, "phone": employee.phone, "region": employee.region,
         "joining_date": employee.joining_date, "employment_status": employee.employment_status,
         "monthly_salary": employee.monthly_salary, "created_at": employee.created_at,
         "full_name": user.full_name, "email": user.email,
@@ -51,7 +51,7 @@ def create_employee(payload: EmployeeCreate, db: Db, actor: HrUser):
         db.add(user); db.flush()
         employee = Employee(user_id=user.id, employee_code=code,
             department=payload.department.strip(), designation=payload.designation.strip(),
-            phone=payload.phone.strip() if payload.phone else None, joining_date=payload.joining_date,
+            phone=payload.phone.strip() if payload.phone else None, region=payload.region.strip() if payload.region else None, joining_date=payload.joining_date,
             monthly_salary=payload.monthly_salary, employment_status="active")
         db.add(employee); db.flush()
         _initialize_leave_balances(db, employee.id)
@@ -105,7 +105,7 @@ def update_employee(employee_id: int, payload: EmployeeUpdate, db: Db, actor: Hr
         if active_admins <= 1:
             raise HTTPException(status_code=409, detail="The system must retain at least one active administrator.")
     user_fields = {"full_name"}
-    employee_fields = {"department", "designation", "phone", "joining_date", "monthly_salary", "employment_status"}
+    employee_fields = {"department", "designation", "phone", "region", "joining_date", "monthly_salary", "employment_status"}
     for field, value in changes.items():
         if field in user_fields and value is not None: setattr(user, field, value)
         elif field in employee_fields and value is not None: setattr(employee, field, value)

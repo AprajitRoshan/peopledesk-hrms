@@ -13,4 +13,8 @@ class Attendance(Base):
     check_out = Column(DateTime, nullable=True)
     status = Column(String(20), nullable=False, default="present")
     correction_note = Column(String(500), nullable=True)
+    shift_id = Column(Integer, ForeignKey("work_shifts.id", ondelete="SET NULL"), nullable=True, index=True)
+    late_minutes = Column(Integer, nullable=False, default=0)
+    early_leave_minutes = Column(Integer, nullable=False, default=0)
+    overtime_minutes = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

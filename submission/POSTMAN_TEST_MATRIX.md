@@ -1,6 +1,6 @@
-# HRMS Postman Test Matrix
+# HRMS Postman Test Matrix — 66 requests
 
-Import `../postman/HRMS_Final.postman_collection.json` into Postman. Set `baseUrl` to `http://127.0.0.1:8000/api`. Enter passwords locally in Postman variables; never export real passwords or tokens.
+Import `../postman/HRMS_Final.postman_collection.json` into Postman. It contains 66 requests across the existing modules and Phase 3 additions. Phase 3-specific request-by-request expected results are in `PHASE3_API_TEST_MATRIX.md`. Set `baseUrl` to `http://127.0.0.1:8000/api`. Enter passwords locally in Postman variables; never export real passwords or tokens.
 
 ## Suggested order
 

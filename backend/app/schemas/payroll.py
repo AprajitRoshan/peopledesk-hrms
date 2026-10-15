@@ -8,13 +8,15 @@ class PayrollCreate(BaseModel):
     pay_period: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     base_salary: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     allowances: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=12, decimal_places=2)
+    bonus: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
+    variable_pay: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     deductions: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=12, decimal_places=2)
     adjustment_amount: Decimal = Field(default=Decimal("0.00"), max_digits=12, decimal_places=2)
     adjustment_note: str | None = Field(default=None, max_length=500)
 
     @model_validator(mode="after")
     def validate_net(self):
-        if self.base_salary is not None and self.base_salary + self.allowances + self.adjustment_amount - self.deductions < 0:
+        if self.base_salary is not None and self.base_salary + self.allowances + (self.bonus or 0) + (self.variable_pay or 0) + self.adjustment_amount - self.deductions < 0:
             raise ValueError("Net salary cannot be negative.")
         if self.adjustment_amount != 0 and not (self.adjustment_note or "").strip():
             raise ValueError("Add a note when applying a manual salary adjustment.")
@@ -31,7 +33,15 @@ class PayrollResponse(BaseModel):
     designation: str
     pay_period: str
     base_salary: Decimal
+    basic_pay: Decimal = Decimal("0.00")
     allowances: Decimal
+    bonus: Decimal = Decimal("0.00")
+    variable_pay: Decimal = Decimal("0.00")
+    overtime_hours: Decimal = Decimal("0.00")
+    overtime_pay: Decimal = Decimal("0.00")
+    component_earning_total: Decimal = Decimal("0.00")
+    component_deduction_total: Decimal = Decimal("0.00")
+    component_breakdown: list[dict] = Field(default_factory=list)
     deductions: Decimal
     adjustment_amount: Decimal
     adjustment_note: str | None

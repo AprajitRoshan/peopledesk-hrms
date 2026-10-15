@@ -35,6 +35,7 @@ class Employee(Base):
     designation = Column(String(100), nullable=False)
 
     phone = Column(String(20), nullable=True)
+    region = Column(String(100), nullable=True)
     monthly_salary = Column(Numeric(12, 2), nullable=False, default=0)
 
     joining_date = Column(Date, nullable=False)

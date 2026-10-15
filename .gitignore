@@ -28,14 +28,14 @@ submission/local_evidence/
 .DS_Store
 Thumbs.db
 
-# Private salary slips, report exports, and screenshot evidence
-/salary-slip-1.pdf
+# Private evidence/export artefacts (submit separately through an authorized channel)
+/salary-slip-*.pdf
 /submission/*.png
 /submission/*.jpg
 /submission/*.jpeg
 /submission/*.csv
 /submission/*.pdf
-
-# Local Postman environment and workspace variables
 /postman/postman/environments/
 /postman/postman/globals/
+
+/backups/

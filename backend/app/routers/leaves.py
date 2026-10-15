@@ -12,6 +12,8 @@ from app.models.leave_request import LeaveRequest
 from app.models.user import User
 from app.schemas.hrms import LeaveCreate, LeaveDecision, LeaveResponse
 from app.services.notifications import send_template_notification
+from app.services.workforce import working_days_excluding_holidays
+from app.services.in_app_notifications import create_in_app_notification, notify_hr_admins
 
 router = APIRouter(prefix="/api/leaves", tags=["Leave Management"])
 Db = Annotated[Session, Depends(get_db)]
@@ -24,9 +26,10 @@ class LeaveBalanceUpdate(BaseModel):
     allocated_days: int = Field(ge=0, le=365)
 
 
-def working_days(start: date, end: date) -> int:
-    return sum(1 for offset in range((end - start).days + 1)
-               if (start + timedelta(days=offset)).weekday() < 5)
+def working_days(start: date, end: date, db: Session | None = None, employee: Employee | None = None) -> int:
+    if db is not None:
+        return working_days_excluding_holidays(db, start, end, employee)
+    return sum(1 for offset in range((end - start).days + 1) if (start + timedelta(days=offset)).weekday() < 5)
 
 
 def _ensure_balances(db: Session, employee_id: int) -> list[LeaveBalance]:
@@ -35,7 +38,8 @@ def _ensure_balances(db: Session, employee_id: int) -> list[LeaveBalance]:
         if leave_type not in existing:
             approved = db.query(LeaveRequest).filter(LeaveRequest.employee_id == employee_id,
                 LeaveRequest.leave_type == leave_type, LeaveRequest.status == "approved").all()
-            used = sum(working_days(row.start_date, row.end_date) for row in approved)
+            employee = db.query(Employee).filter_by(id=employee_id).first()
+            used = sum(working_days(row.start_date, row.end_date, db, employee) for row in approved)
             row = LeaveBalance(employee_id=employee_id, leave_type=leave_type, allocated_days=days, used_days=used)
             db.add(row); existing[leave_type] = row
     db.flush()
@@ -43,13 +47,14 @@ def _ensure_balances(db: Session, employee_id: int) -> list[LeaveBalance]:
 
 
 def _serialize(db: Session, leave: LeaveRequest) -> dict:
-    row = db.query(Employee.employee_code, User.full_name).join(User, User.id == Employee.user_id).filter(Employee.id == leave.employee_id).first()
+    row = db.query(Employee, User).join(User, User.id == Employee.user_id).filter(Employee.id == leave.employee_id).first()
+    employee, user = row if row else (None, None)
     return {"id": leave.id, "employee_id": leave.employee_id, "start_date": leave.start_date,
             "end_date": leave.end_date, "leave_type": leave.leave_type, "reason": leave.reason,
             "review_note": leave.review_note, "status": leave.status, "reviewed_by": leave.reviewed_by,
             "reviewed_at": leave.reviewed_at, "created_at": leave.created_at,
-            "employee_code": row[0] if row else None, "employee_name": row[1] if row else None,
-            "days_requested": working_days(leave.start_date, leave.end_date)}
+            "employee_code": employee.employee_code if employee else None, "employee_name": user.full_name if user else None,
+            "days_requested": working_days(leave.start_date, leave.end_date, db, employee)}
 
 
 def _own_employee(db: Session, user: User) -> Employee:
@@ -62,7 +67,7 @@ def _own_employee(db: Session, user: User) -> Employee:
 @router.post("", response_model=LeaveResponse, status_code=status.HTTP_201_CREATED)
 def apply_leave(payload: LeaveCreate, db: Db, user: CurrentUser):
     employee = _own_employee(db, user)
-    requested_days = working_days(payload.start_date, payload.end_date)
+    requested_days = working_days(payload.start_date, payload.end_date, db, employee)
     if requested_days < 1:
         raise HTTPException(status_code=422, detail="Leave must include at least one weekday.")
     overlapping = db.query(LeaveRequest).filter(LeaveRequest.employee_id == employee.id,
@@ -80,6 +85,12 @@ def apply_leave(payload: LeaveCreate, db: Db, user: CurrentUser):
     send_template_notification(db, recipient=user.email, template_key="leave_applied",
         context={"name": user.full_name, "start_date": payload.start_date.isoformat(), "end_date": payload.end_date.isoformat()},
         related_entity_type="leave_request", related_entity_id=leave.id)
+    notify_hr_admins(db, category="leave", title="New leave request",
+        message=f"{user.full_name} requested {requested_days} day(s) of {leave.leave_type} leave ({leave.start_date} to {leave.end_date}).",
+        source_type="leave_request", source_id=leave.id, created_by=user.id)
+    create_in_app_notification(db, user_id=user.id, category="leave", title="Leave request submitted",
+        message=f"Your {leave.leave_type} leave request for {leave.start_date} to {leave.end_date} is pending review.",
+        source_type="leave_request", source_id=leave.id, created_by=user.id)
     db.commit(); db.refresh(leave)
     return _serialize(db, leave)
 
@@ -142,7 +153,8 @@ def decide_leave(leave_id: int, payload: LeaveDecision, db: Db, actor: HrUser):
     leave = db.query(LeaveRequest).filter(LeaveRequest.id == leave_id).first()
     if leave is None: raise HTTPException(status_code=404, detail="Leave request not found.")
     if leave.status != "pending": raise HTTPException(status_code=409, detail="This leave request has already been reviewed.")
-    days = working_days(leave.start_date, leave.end_date)
+    employee = db.query(Employee).filter_by(id=leave.employee_id).first()
+    days = working_days(leave.start_date, leave.end_date, db, employee)
     if payload.decision == "approved" and leave.leave_type != "unpaid":
         balances = _ensure_balances(db, leave.employee_id)
         balance = next((row for row in balances if row.leave_type == leave.leave_type), None)
@@ -154,12 +166,14 @@ def decide_leave(leave_id: int, payload: LeaveDecision, db: Db, actor: HrUser):
     leave.review_note = payload.review_note.strip() if payload.review_note else None
     write_audit_log(db, actor_user_id=actor.id, action=f"leave.{payload.decision}", entity_type="leave_request",
                     entity_id=leave.id, details={"review_note": leave.review_note, "days": days, "leave_type": leave.leave_type})
-    employee = db.query(Employee).filter(Employee.id == leave.employee_id).first()
     user = db.query(User).filter(User.id == employee.user_id).first() if employee else None
     if user:
         send_template_notification(db, recipient=user.email, template_key="leave_decision",
             context={"name": user.full_name, "start_date": leave.start_date.isoformat(),
                      "end_date": leave.end_date.isoformat(), "decision": payload.decision},
             related_entity_type="leave_request", related_entity_id=leave.id)
+        create_in_app_notification(db, user_id=user.id, category="leave", title=f"Leave {payload.decision}",
+            message=f"Your {leave.leave_type} leave request for {leave.start_date} to {leave.end_date} was {payload.decision}.",
+            source_type="leave_request", source_id=leave.id, created_by=actor.id)
     db.commit(); db.refresh(leave)
     return _serialize(db, leave)

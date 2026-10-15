@@ -11,6 +11,10 @@ class AttendanceResponse(BaseModel):
     check_out: datetime | None
     status: str
     correction_note: str | None = None
+    shift_id: int | None = None
+    late_minutes: int = 0
+    early_leave_minutes: int = 0
+    overtime_minutes: int = 0
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 

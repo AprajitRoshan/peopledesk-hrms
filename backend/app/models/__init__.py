@@ -7,5 +7,9 @@ from app.models.payroll import PayrollRecord
 from app.models.notification_log import NotificationLog
 from app.models.leave_balance import LeaveBalance
 from app.models.employee_document import EmployeeDocument
+from app.models.holiday import Holiday, OptionalHolidaySelection
+from app.models.notification_center import InAppNotification, NotificationPreference
+from app.models.work_shift import WorkShift, ShiftAssignment
+from app.models.compensation import SalaryComponent, CompensationRevision
 
-__all__ = ["User", "Employee", "Attendance", "LeaveRequest", "AuditLog", "PayrollRecord", "NotificationLog", "LeaveBalance", "EmployeeDocument"]
+__all__ = ["User", "Employee", "Attendance", "LeaveRequest", "AuditLog", "PayrollRecord", "NotificationLog", "LeaveBalance", "EmployeeDocument", "Holiday", "OptionalHolidaySelection", "InAppNotification", "NotificationPreference", "WorkShift", "ShiftAssignment", "SalaryComponent", "CompensationRevision"]
